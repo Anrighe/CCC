@@ -5,10 +5,10 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
 
-        self.image = pygame.image.load('assets\\player.png')
-        #self.image.set_colorkey(-1)
+        self.image = pygame.image.load('assets\\playerDebug.png')
         self.image = pygame.transform.scale(self.image, (width, height))
         self.rect = self.image.get_rect()
+
         self.rect.x = x
         self.rect.y = y
         self.velocity = 500
