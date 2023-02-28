@@ -8,7 +8,6 @@ import math
 
 class CCC:
     def __init__(self):
-
         pygame.init()
 
         self.screenWidth = 1366
@@ -33,21 +32,35 @@ class CCC:
         self.player = Player(self.playerStartingX, self.playerStartingY, self.playerWidth, self.playerHeight)
         self.allSprites = pygame.sprite.Group()
 
-        self.item = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                         random.randint(self.mapBorder, self.screenHeight-self.mapBorder),
-                         40, 40)
+        self.item1 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
+                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder),
+                          40, 40)
 
-        self.allSprites.add(self.item)
+        self.item2 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
+                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder),
+                          40, 40)
+
+        self.item1RespawnTimer = 0
+        self.item2RespawnTimer = 0
+        self.itemRespawnInterval = 1000
+        self.pickedUpItems = 0
+
+        self.wtf = False
+        self.wtfEffectTimer = 0
+        self.wtfDuration = 5000
+
+        self.allSprites.add(self.item1)
+        self.allSprites.add(self.item2)
         self.allSprites.add(self.player)
 
         self.running = False
         self.keyPressed = None
         self.keys = None
 
-        self.wobble_amplitude = 4
-        self.wobble_frequency = 0.4
-        self.wobble_offset = 0
-        self.wobble_delta = 0
+        self.wobbleAmplitude = 4
+        self.wobbleFrequency = 0.4
+        self.wobbleOffset = 0
+        self.wobbleDelta = 0
 
     def run(self):
         self.running = True
@@ -56,12 +69,15 @@ class CCC:
             self.fps = self.clock.get_fps()
             pygame.display.set_caption(f'CCC - {int(self.fps)}')
 
-            self.delta = self.clock.tick(144) / 1000.0
+            self.delta = self.clock.tick(144) / 1000.0  # delta = time required to output a frame
 
-            self.wobble_offset += 0.1
-            self.wobble_delta = math.sin(self.wobble_offset * self.wobble_frequency) * self.wobble_amplitude
-            self.item.rect.y = self.item.originalY + self.wobble_delta
+            # Determine and apply wobble to items
+            self.wobbleOffset += 0.1
+            self.wobbleDelta = math.sin(self.wobbleOffset * self.wobbleFrequency) * self.wobbleAmplitude
+            self.item1.rect.y = self.item1.originalY + self.wobbleDelta
+            self.item2.rect.y = self.item2.originalY + self.wobbleDelta
 
+            # Event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -69,38 +85,64 @@ class CCC:
             # Storing the key pressed in a new variable using key.get_pressed() method
             self.keyPressed = pygame.key.get_pressed()
 
-            # Changing the coordinates of the player
-            if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
-                if self.player.rect.x >= 0 + self.mapBorder:
-                    self.player.moveLeft(self.delta)
+            self.checkPlayerStatus()
 
-            if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
-                if self.player.rect.x <= self.screenWidth-self.playerWidth - self.mapBorder:
-                    self.player.moveRight(self.delta)
+            self.checkCollision()
 
-            if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
-                if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight/4:
-                    self.player.moveUp(self.delta)
+            if self.item2RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
+                self.allSprites.add(self.item2)
 
-            if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
-                if self.player.rect.y <= self.screenHeight-self.playerHeight - + self.mapBorder:
-                    self.player.moveDown(self.delta)
+            if self.pickedUpItems < 10:
+                self.screen.blit(self.background, (0, 0))
+            else:
+                if not self.wtf:
+                    self.wtfEffectTimer = pygame.time.get_ticks()
+                self.wtf = True
+                if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
+                    self.pickedUpItems = 0
+                    self.wtf = False
 
-            if not any(self.keyPressed):
-                self.player.standStill()
-
-            self.screen.blit(self.background, (0, 0))
             self.allSprites.draw(self.screen)
-
-            if self.player.rect.colliderect(self.item.rect):
-                self.item.kill()
-                self.item = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
-                                 random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)),
-                                 40, 40)
-
-                self.allSprites.add(self.item)
-                pygame.display.update()
-
             pygame.display.flip()
 
         pygame.quit()
+
+    def checkPlayerStatus(self):
+        if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
+            if self.player.rect.x >= 0 + self.mapBorder:
+                self.player.moveLeft(self.delta)
+
+        if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
+            if self.player.rect.x <= self.screenWidth - self.playerWidth - self.mapBorder:
+                self.player.moveRight(self.delta)
+
+        if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
+            if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight / 4:
+                self.player.moveUp(self.delta)
+
+        if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
+            if self.player.rect.y <= self.screenHeight - self.playerHeight - + self.mapBorder:
+                self.player.moveDown(self.delta)
+
+        if not any(self.keyPressed):
+            self.player.standStill()
+
+    def checkCollision(self):
+        # Item 1
+        if self.player.rect.colliderect(self.item1.rect):
+            self.item1.kill()
+            self.pickedUpItems += 1
+            self.item1 = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
+                              random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
+            self.item1RespawnTimer = pygame.time.get_ticks()
+
+        if self.item1RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
+            self.allSprites.add(self.item1)
+
+        # Item 2
+        if self.player.rect.colliderect(self.item2.rect):
+            self.item2.kill()
+            self.pickedUpItems += 1
+            self.item2 = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
+                              random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
+            self.item2RespawnTimer = pygame.time.get_ticks()
