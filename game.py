@@ -5,6 +5,7 @@ from item import Item
 import random
 import math
 
+
 class CCC:
     def __init__(self):
 
@@ -17,7 +18,7 @@ class CCC:
         self.playerStartingY = self.screenHeight/2
 
         self.playerSprite = Image.open('assets\\player.png')
-        self.playerSpriteBoost = 5
+        self.playerSpriteBoost = 3
         self.playerWidth = self.playerSprite.width * self.playerSpriteBoost
         self.playerHeight = self.playerSprite.height * self.playerSpriteBoost
 
@@ -84,6 +85,9 @@ class CCC:
             if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
                 if self.player.rect.y <= self.screenHeight-self.playerHeight - + self.mapBorder:
                     self.player.moveDown(self.delta)
+
+            if not any(self.keyPressed):
+                self.player.standStill()
 
             self.screen.blit(self.background, (0, 0))
             self.allSprites.draw(self.screen)
