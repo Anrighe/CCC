@@ -101,10 +101,14 @@ class CCC:
             if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
                 if self.player.rect.x >= 0 + self.mapBorder:
                     self.player.moveLeft(self.delta)
+                else:
+                    self.player.resetVelocityX()
 
             if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
                 if self.player.rect.x <= self.screenWidth - self.playerWidth - self.mapBorder:
                     self.player.moveRight(self.delta)
+                else:
+                    self.player.resetVelocityX()
 
         if (self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]) and (self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]):
             self.player.resetVelocityY()
@@ -112,18 +116,16 @@ class CCC:
             if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
                 if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight / 4:
                     self.player.moveUp(self.delta)
+                else:
+                    self.player.resetVelocityY()
 
             if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
                 if self.player.rect.y <= self.screenHeight - self.playerHeight - + self.mapBorder:
                     self.player.moveDown(self.delta)
+                else:
+                    self.player.resetVelocityY()
 
-        if not self.player.isPlayerOnAnyBorder(self.screenWidth, self.screenHeight, self.mapBorder):
-            self.player.inertia(self.delta)
-        else:
-            if self.player.isPlayerOnXBorder(self.screenWidth, self.mapBorder):
-                self.player.resetVelocityX()
-            if self.player.isPlayerOnYBorder(self.screenHeight, self.mapBorder):
-                self.player.resetVelocityY()
+        self.player.inertia(self.delta)
 
         if not any(self.keyPressed):
             self.player.standStill()

@@ -82,18 +82,23 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
 
     def isPlayerOnAnyBorder(self, width, height, border):
-        if self.rect.x <= 0+border or self.rect.x >= width-border or self.rect.y <= 0+border or self.rect.y >= height-border:
+        if self.rect.x <= border or self.rect.x >= width-border or self.rect.y <= border or self.rect.y >= height-border:
             return True
         else:
             return False
 
     def isPlayerOnXBorder(self, width, border):
-        if self.rect.x <= 0 + border or self.rect.x >= width - border:
+        if self.rect.x <= border or self.rect.x >= width - border:
             return True
+        else:
+            return False
 
     def isPlayerOnYBorder(self, height, border):
-        if self.rect.y <= 0+border or self.rect.y >= height-border:
+        if self.rect.y <= border or self.rect.y >= height-border:
+            print("in TOP border", self.rect.y)
             return True
+        else:
+            return False
 
     def resetVelocityX(self):
         self.velocityX = 0
