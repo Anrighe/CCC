@@ -21,15 +21,19 @@ class Player(pygame.sprite.Sprite):
         self.velocityX = 0
         self.velocityY = 0
         self.standardSpeed = 400
+        self.inertiaCoefficient = 5
 
         self.spriteTimer = 0
         self.walkingInterval = 150
 
         self.lastMovementLeft = None
 
+    # In each movement calculation the truncation of floating-point (velocity * delta) will be avoided
+    # by converting it to an integer before adding it to the integer variable self.rect.x
+
     def moveLeft(self, delta):
         self.velocityX = - self.standardSpeed
-        self.rect.x += self.velocityX * delta
+        self.rect.x += int(self.velocityX * delta)
         self.lastMovementLeft = True  # Temporary
         if self.spriteTimer + self.walkingInterval < pygame.time.get_ticks():
             self.spritesIndex = (self.spritesIndex + 1) % len(self.sprites)
@@ -40,7 +44,7 @@ class Player(pygame.sprite.Sprite):
 
     def moveRight(self, delta):
         self.velocityX = self.standardSpeed
-        self.rect.x += self.velocityX * delta
+        self.rect.x += int(self.velocityX * delta)
         self.lastMovementLeft = False  # Temporary
         if self.spriteTimer + self.walkingInterval < pygame.time.get_ticks():
             self.spritesIndex = (self.spritesIndex + 1) % len(self.sprites)
@@ -50,29 +54,38 @@ class Player(pygame.sprite.Sprite):
 
     def moveUp(self, delta):
         self.velocityY = - self.standardSpeed
-        self.rect.y += self.velocityY * delta
+        self.rect.y += int(self.velocityY * delta)
 
     def moveDown(self, delta):
         self.velocityY = self.standardSpeed
-        self.rect.y += self.velocityY * delta
+        self.rect.y += int(self.velocityY * delta)
 
-    def inertia(self, delta):
+    def inertia(self, delta, borderLeft, borderRight, borderUp, borderDown):
+
+        # X-axis inertia
+        if self.rect.x < borderLeft or self.rect.x > borderRight:
+            self.velocityX = 0
+
         if self.velocityX > 1:
-            self.velocityX -= 20
+            self.velocityX -= self.inertiaCoefficient
         elif self.velocityX < -1:
-            self.velocityX += 20
+            self.velocityX += self.inertiaCoefficient
         else:
             self.velocityX = 0
 
+        # Y-axis inertia
+        if self.rect.y < borderUp or self.rect.y > borderDown:
+            self.velocityY = 0
+
         if self.velocityY > 1:
-            self.velocityY -= 20
+            self.velocityY -= self.inertiaCoefficient
         elif self.velocityY < -1:
-            self.velocityY += 20
+            self.velocityY += self.inertiaCoefficient
         else:
             self.velocityY = 0
 
-        self.rect.x += self.velocityX * delta
-        self.rect.y += self.velocityY * delta
+        self.rect.x += int(self.velocityX * delta)
+        self.rect.y += int(self.velocityY * delta)
 
     def standStill(self):
         self.image = pygame.image.load('assets\\player.png')

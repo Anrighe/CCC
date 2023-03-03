@@ -20,6 +20,7 @@ class CCC:
         self.playerSpriteBoost = 3
         self.playerWidth = self.playerSprite.width * self.playerSpriteBoost
         self.playerHeight = self.playerSprite.height * self.playerSpriteBoost
+        self.isPlayerMoving = False
 
         self.fps = 0
         self.delta = 0
@@ -67,7 +68,12 @@ class CCC:
             self.fps = self.clock.get_fps()
             pygame.display.set_caption(f'CCC - {int(self.fps)}')
 
+            # For some reason to me unknown, by specifying another time the desired frame rate one more time before
+            # calculating the delta, solves a movement bug which was causing the player to not move constantly
+            self.clock.tick(144)
             self.delta = self.clock.tick(144) / 1000.0  # delta = time required to output a frame
+
+            print(self.player.rect.x)
 
             # Determine and apply wobble to items
             self.wobbleOffset += 0.1
@@ -99,13 +105,15 @@ class CCC:
             self.player.resetVelocityX()
         else:
             if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
-                if self.player.rect.x >= 0 + self.mapBorder:
+                if self.player.rect.x >= self.mapBorder:
+                    self.isPlayerMoving = True
                     self.player.moveLeft(self.delta)
                 else:
                     self.player.resetVelocityX()
 
             if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
                 if self.player.rect.x <= self.screenWidth - self.playerWidth - self.mapBorder:
+                    self.isPlayerMoving = True
                     self.player.moveRight(self.delta)
                 else:
                     self.player.resetVelocityX()
@@ -114,18 +122,23 @@ class CCC:
             self.player.resetVelocityY()
         else:
             if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
-                if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight / 4:
+                if self.player.rect.y >= self.mapBorder - self.playerHeight / 4:
+                    self.isPlayerMoving = True
                     self.player.moveUp(self.delta)
                 else:
                     self.player.resetVelocityY()
 
             if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
-                if self.player.rect.y <= self.screenHeight - self.playerHeight - + self.mapBorder:
+                if self.player.rect.y <= self.screenHeight - self.playerHeight - self.mapBorder:
+                    self.isPlayerMoving = True
                     self.player.moveDown(self.delta)
                 else:
                     self.player.resetVelocityY()
 
-        self.player.inertia(self.delta)
+        if self.isPlayerMoving:
+            self.player.inertia(self.delta, self.mapBorder, self.screenWidth - self.mapBorder,
+                                self.mapBorder - self.playerHeight / 4,
+                                self.screenHeight - self.playerHeight - self.mapBorder)
 
         if not any(self.keyPressed):
             self.player.standStill()
