@@ -33,12 +33,10 @@ class CCC:
         self.allSprites = pygame.sprite.Group()
 
         self.item1 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder),
-                          40, 40)
+                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40)
 
         self.item2 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder),
-                          40, 40)
+                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40)
 
         self.item1RespawnTimer = 0
         self.item2RespawnTimer = 0
@@ -47,7 +45,7 @@ class CCC:
 
         self.wtf = False
         self.wtfEffectTimer = 0
-        self.wtfDuration = 5000
+        self.wtfDuration = 10000
 
         self.allSprites.add(self.item1)
         self.allSprites.add(self.item2)
@@ -89,18 +87,7 @@ class CCC:
 
             self.checkCollision()
 
-            if self.item2RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
-                self.allSprites.add(self.item2)
-
-            if self.pickedUpItems < 10:
-                self.screen.blit(self.background, (0, 0))
-            else:
-                if not self.wtf:
-                    self.wtfEffectTimer = pygame.time.get_ticks()
-                self.wtf = True
-                if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
-                    self.pickedUpItems = 0
-                    self.wtf = False
+            self.wtfMode()
 
             self.allSprites.draw(self.screen)
             pygame.display.flip()
@@ -108,21 +95,35 @@ class CCC:
         pygame.quit()
 
     def checkPlayerStatus(self):
-        if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
-            if self.player.rect.x >= 0 + self.mapBorder:
-                self.player.moveLeft(self.delta)
+        if (self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]) and (self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]):
+            self.player.resetVelocityX()
+        else:
+            if self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]:
+                if self.player.rect.x >= 0 + self.mapBorder:
+                    self.player.moveLeft(self.delta)
 
-        if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
-            if self.player.rect.x <= self.screenWidth - self.playerWidth - self.mapBorder:
-                self.player.moveRight(self.delta)
+            if self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]:
+                if self.player.rect.x <= self.screenWidth - self.playerWidth - self.mapBorder:
+                    self.player.moveRight(self.delta)
 
-        if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
-            if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight / 4:
-                self.player.moveUp(self.delta)
+        if (self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]) and (self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]):
+            self.player.resetVelocityY()
+        else:
+            if self.keyPressed[pygame.K_UP] or self.keyPressed[pygame.K_w]:
+                if self.player.rect.y >= 0 + self.mapBorder - self.playerHeight / 4:
+                    self.player.moveUp(self.delta)
 
-        if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
-            if self.player.rect.y <= self.screenHeight - self.playerHeight - + self.mapBorder:
-                self.player.moveDown(self.delta)
+            if self.keyPressed[pygame.K_DOWN] or self.keyPressed[pygame.K_s]:
+                if self.player.rect.y <= self.screenHeight - self.playerHeight - + self.mapBorder:
+                    self.player.moveDown(self.delta)
+
+        if not self.player.isPlayerOnAnyBorder(self.screenWidth, self.screenHeight, self.mapBorder):
+            self.player.inertia(self.delta)
+        else:
+            if self.player.isPlayerOnXBorder(self.screenWidth, self.mapBorder):
+                self.player.resetVelocityX()
+            if self.player.isPlayerOnYBorder(self.screenHeight, self.mapBorder):
+                self.player.resetVelocityY()
 
         if not any(self.keyPressed):
             self.player.standStill()
@@ -146,3 +147,17 @@ class CCC:
             self.item2 = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
                               random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
             self.item2RespawnTimer = pygame.time.get_ticks()
+
+        if self.item2RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
+            self.allSprites.add(self.item2)
+
+    def wtfMode(self):
+        if self.pickedUpItems < 10:
+            self.screen.blit(self.background, (0, 0))
+        else:
+            if not self.wtf:
+                self.wtfEffectTimer = pygame.time.get_ticks()
+            self.wtf = True
+            if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
+                self.pickedUpItems = 0
+                self.wtf = False
