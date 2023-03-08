@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.velocityX = 0
         self.velocityY = 0
-        self.standardSpeed = 450
+        self.standardSpeed = 400
         self.inertiaCoefficient = 6
 
         self.spriteTimer = 0
@@ -74,25 +74,25 @@ class Player(pygame.sprite.Sprite):
 
         # X-axis inertia
         if self.rect.x < borderLeft or self.rect.x > borderRight:
-            self.velocityX = 0
+            self.resetVelocityX()
 
-        if self.velocityX > 1:
+        if self.velocityX > self.inertiaCoefficient:
             self.velocityX -= self.inertiaCoefficient
-        elif self.velocityX < -1:
+        elif self.velocityX < -self.inertiaCoefficient:
             self.velocityX += self.inertiaCoefficient
         else:
-            self.velocityX = 0
+            self.resetVelocityX()
 
         # Y-axis inertia
         if self.rect.y < borderUp or self.rect.y > borderDown:
-            self.velocityY = 0
+            self.resetVelocityY()
 
-        if self.velocityY > 1:
+        if self.velocityY > self.inertiaCoefficient:
             self.velocityY -= self.inertiaCoefficient
-        elif self.velocityY < -1:
+        elif self.velocityY < -self.inertiaCoefficient:
             self.velocityY += self.inertiaCoefficient
         else:
-            self.velocityY = 0
+            self.resetVelocityY()
 
         self.rect.x += int(self.velocityX * delta)
         self.rect.y += int(self.velocityY * delta)

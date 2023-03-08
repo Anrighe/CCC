@@ -138,7 +138,7 @@ class CCC:
                                 self.mapBorder - self.playerHeight / 4,
                                 self.screenHeight - self.playerHeight - self.mapBorder)
 
-        if not any(self.keyPressed):
+        if not any(self.keyPressed) and self.player.velocityX == 0 and self.player.velocityY == 0:
             self.player.standStill()
 
     def checkCollision(self):
