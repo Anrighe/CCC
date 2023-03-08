@@ -16,8 +16,8 @@ class CCC:
         self.playerStartingX = self.screenWidth/2
         self.playerStartingY = self.screenHeight/2
 
-        self.playerSprite = Image.open('assets\\player.png')
-        self.playerSpriteBoost = 3
+        self.playerSprite = Image.open('assets\\sprites\\CCC-walkFront1.png')
+        self.playerSpriteBoost = 1.5
         self.playerWidth = self.playerSprite.width * self.playerSpriteBoost
         self.playerHeight = self.playerSprite.height * self.playerSpriteBoost
         self.isPlayerMoving = False
@@ -68,12 +68,10 @@ class CCC:
             self.fps = self.clock.get_fps()
             pygame.display.set_caption(f'CCC - {int(self.fps)}')
 
-            # For some reason to me unknown, by specifying another time the desired frame rate one more time before
-            # calculating the delta, solves a movement bug which was causing the player to not move constantly
+            # For some reason to me unknown, by specifying the desired frame rate one more time before calculating
+            # the delta it will solve a movement bug which was causing the player to not inconstantly over time
             self.clock.tick(144)
             self.delta = self.clock.tick(144) / 1000.0  # delta = time required to output a frame
-
-            print(self.player.rect.x)
 
             # Determine and apply wobble to items
             self.wobbleOffset += 0.1
