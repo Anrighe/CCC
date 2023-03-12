@@ -96,6 +96,11 @@ class CCC:
         pygame.quit()
 
     def checkPlayerStatus(self):
+        if any(self.keyPressed):
+            if self.player.walkingSoundEffectTimer + self.player.walkingSoundEffectInterval < pygame.time.get_ticks():
+                self.player.playWalkingSound()
+                self.player.walkingSoundEffectTimer = pygame.time.get_ticks()
+
         if (self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]) and (self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]):
             self.player.resetVelocityX()
         else:
@@ -137,6 +142,7 @@ class CCC:
 
         if not any(self.keyPressed) and self.player.velocityX == 0 and self.player.velocityY == 0:
             self.player.standStill()
+            self.isPlayerMoving = False
 
     def checkCollision(self):
 
@@ -151,7 +157,6 @@ class CCC:
                 if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
                     self.allSprites.add(item)
                     self.items.append(item)
-
 
     def wtfMode(self):
         if self.pickedUpItems < 10:

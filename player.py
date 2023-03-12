@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 class Player(pygame.sprite.Sprite):
@@ -13,7 +14,12 @@ class Player(pygame.sprite.Sprite):
         self.walkLeftSprites = []
         self.walkRightSprites = []
 
+        self.walkingSoundEffects = []
+        self.walkingSoundEffectTimer = 0
+        self.walkingSoundEffectInterval = 600
+
         self.spriteLoader()
+        self.soundLoader()
         self.spritesIndex = 0
 
         self.image = pygame.image.load('assets\\player.png')
@@ -127,8 +133,18 @@ class Player(pygame.sprite.Sprite):
         self.velocityY = 0
 
     def spriteLoader(self):
-        for i in range(1,7):
+        for i in range(1, 7):
             self.walkFrontSprites.append(pygame.image.load(f'assets\\sprites\\CCC-walkFront{i}.png'))
             self.walkBackSprites.append(pygame.image.load(f'assets\\sprites\\CCC-walkBack{i}.png'))
             self.walkLeftSprites.append(pygame.image.load(f'assets\\sprites\\CCC-walkLeft{i}.png'))
             self.walkRightSprites.append(pygame.image.load(f'assets\\sprites\\CCC-walkRight{i}.png'))
+
+    def soundLoader(self):
+        for i in range(1, 4):
+            self.walkingSoundEffects.append(pygame.mixer.Sound(f'assets\\audio\\CCC-walk{i}.mp3'))
+        for sound in self.walkingSoundEffects:
+            sound.set_volume(0.3)
+
+    def playWalkingSound(self):
+        random.choice(self.walkingSoundEffects).play()
+
