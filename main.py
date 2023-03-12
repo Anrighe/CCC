@@ -1,5 +1,4 @@
-from game import CCC
+from menu import Menu
 
 if __name__ == '__main__':
-    game = CCC()
-    game.run()
+    menu = Menu()
