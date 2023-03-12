@@ -4,6 +4,7 @@ from PIL import Image
 from item import Item
 import random
 import math
+from cat import Cat
 
 
 class CCC:
@@ -58,6 +59,8 @@ class CCC:
         self.wobbleFrequency = 0.4
         self.wobbleOffset = 0
         self.wobbleDelta = 0
+
+        self.cat = Cat(self.screenWidth - self.mapBorder, self.screenHeight//2 + 40)
 
     def run(self):
         self.running = True
@@ -156,6 +159,10 @@ class CCC:
                 self.items.append(item)
             if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
                 self.allSprites.add(item)
+
+        if self.player.rect.colliderect(self.cat.catArea) and self.cat.meowTimer + self.cat.meowDelay < pygame.time.get_ticks():
+            self.cat.meow()
+            self.cat.meowTimer = pygame.time.get_ticks()
 
     def wtfMode(self):
         if self.pickedUpItems < 10:
