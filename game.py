@@ -39,12 +39,6 @@ class CCC:
                       random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40)
                       for _ in range(self.itemNumber)]
 
-        self.item1 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40) #DA ELIMINARE
-
-        self.item2 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                          random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40) #DA ELIMINARE
-
         self.itemRespawnInterval = 1000
         self.pickedUpItems = 0
 
