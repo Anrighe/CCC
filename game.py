@@ -145,18 +145,18 @@ class CCC:
             self.isPlayerMoving = False
 
     def checkCollision(self):
-
         for item in self.items:
             if self.player.rect.colliderect(item):
-                self.items.remove(item)
                 item.kill()
+                self.items.remove(item)
                 self.pickedUpItems += 1
                 item = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
                             random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
                 item.respawnTimer = pygame.time.get_ticks()
-                if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
-                    self.allSprites.add(item)
-                    self.items.append(item)
+                self.items.append(item)
+            if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
+                self.allSprites.add(item)
+
 
     def wtfMode(self):
         if self.pickedUpItems < 10:
