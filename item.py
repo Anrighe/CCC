@@ -11,3 +11,4 @@ class Item(pygame.sprite.Sprite):
         self.rect.y = y
         self.originalY = y
         self.velocity = 500
+        self.respawnTimer = 0

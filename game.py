@@ -35,9 +35,9 @@ class CCC:
 
         self.itemNumber = 5
         self.maxItemNumber = 8
-        self.items = [(Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
-                      random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40), 0)
-                      for _ in range(self.itemNumber+1)]
+        self.items = [Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
+                      random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40)
+                      for _ in range(self.itemNumber)]
 
         self.item1 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
                           random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40) #DA ELIMINARE
@@ -45,8 +45,6 @@ class CCC:
         self.item2 = Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
                           random.randint(self.mapBorder, self.screenHeight-self.mapBorder), 40, 40) #DA ELIMINARE
 
-        #self.item1RespawnTimer = 0 #DA ELIMINARE
-        #self.item2RespawnTimer = 0 #DA ELIMINARE
         self.itemRespawnInterval = 1000
         self.pickedUpItems = 0
 
@@ -54,10 +52,8 @@ class CCC:
         self.wtfEffectTimer = 0
         self.wtfDuration = 10000
 
-        #self.allSprites.add(self.item1) #DA ELIMINARE
-        #self.allSprites.add(self.item2) #DA ELIMINARE
         for item in self.items:
-            self.allSprites.add(item[0])
+            self.allSprites.add(item)
         self.allSprites.add(self.player)
 
         self.running = False
@@ -85,9 +81,7 @@ class CCC:
             self.wobbleOffset += 0.1
             self.wobbleDelta = math.sin(self.wobbleOffset * self.wobbleFrequency) * self.wobbleAmplitude
             for item in self.items:
-                item[0].rect.y = item[0].originalY + self.wobbleDelta
-            #self.item1.rect.y = self.item1.originalY + self.wobbleDelta # DA ELIMINARE
-            #self.item2.rect.y = self.item2.originalY + self.wobbleDelta # DA ELIMINARE
+                item.rect.y = item.originalY + self.wobbleDelta
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -153,36 +147,17 @@ class CCC:
     def checkCollision(self):
 
         for item in self.items:
-            if self.player.rect.colliderect(item[0]):
-                item[0].kill()
+            if self.player.rect.colliderect(item):
+                self.items.remove(item)
+                item.kill()
                 self.pickedUpItems += 1
                 item = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
                             random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
-                item[1] = pygame.time.get_ticks()
-                if item[1] + self.itemRespawnInterval < pygame.time.get_ticks():
-                    self.allSprites.add(self.item1)
+                item.respawnTimer = pygame.time.get_ticks()
+                if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
+                    self.allSprites.add(item)
+                    self.items.append(item)
 
-        """        # Item 1
-        if self.player.rect.colliderect(self.item1.rect):
-            self.item1.kill()
-            self.pickedUpItems += 1
-            self.item1 = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
-                              random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
-            self.item1RespawnTimer = pygame.time.get_ticks()
-
-        if self.item1RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
-            self.allSprites.add(self.item1)
-
-        # Item 2
-        if self.player.rect.colliderect(self.item2.rect):
-            self.item2.kill()
-            self.pickedUpItems += 1
-            self.item2 = Item(random.randint(self.mapBorder, self.screenWidth - (self.mapBorder * 2)),
-                              random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
-            self.item2RespawnTimer = pygame.time.get_ticks()
-
-        if self.item2RespawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
-            self.allSprites.add(self.item2)"""
 
     def wtfMode(self):
         if self.pickedUpItems < 10:
