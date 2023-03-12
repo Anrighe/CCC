@@ -25,8 +25,8 @@ class CCC:
         self.fps = 0
         self.delta = 0
 
-        self.background = pygame.image.load('assets\\background.png')
-        self.mapBorder = 50
+        self.background = pygame.image.load('assets\\sprites\\CCC-backgroundClosedDoor.png')
+        self.mapBorder = 60
 
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
         self.clock = pygame.time.Clock()
@@ -156,7 +156,6 @@ class CCC:
                 self.items.append(item)
             if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
                 self.allSprites.add(item)
-
 
     def wtfMode(self):
         if self.pickedUpItems < 10:
