@@ -1,5 +1,6 @@
 import pygame
 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
@@ -23,8 +24,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.velocityX = 0
         self.velocityY = 0
-        self.standardSpeed = 400
-        self.inertiaCoefficient = 6
+        self.standardSpeed = 430
+        self.inertiaCoefficient = 7
 
         self.spriteTimer = 0
         self.walkingInterval = 150
