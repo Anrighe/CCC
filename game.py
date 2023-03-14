@@ -101,7 +101,7 @@ class CCC:
     def checkPlayerStatus(self):
         if any(self.keyPressed):
             if self.player.walkingSoundEffectTimer + self.player.walkingSoundEffectInterval < pygame.time.get_ticks():
-                if self.player.velocityX != 0 and self.player.velocityY:
+                if self.player.velocityX != 0 or self.player.velocityY != 0:
                     self.player.playWalkingSound()
                     self.player.walkingSoundEffectTimer = pygame.time.get_ticks()
 
