@@ -6,6 +6,7 @@ from game import CCC
 class Menu:
     def __init__(self):
         pygame.init()
+        pygame.display.set_caption('CCC')
 
         self.screenWidth = 800
         self.screenHeight = 600
@@ -19,6 +20,12 @@ class Menu:
         self.buttonColor = (255, 0, 0)
         self.buttonHoverColor = (0, 0, 255)
         self.buttonTextColor = (255, 255, 255)
+
+        self.background = pygame.image.load('assets\\sprites\\CCC-menuBackground.png')
+        self.background = pygame.transform.scale(self.background, (self.screenWidth, self.screenHeight))
+        self.surface.blit(self.background, (0, 0))
+
+        pygame.display.update()
 
         self.startButtonRect = pygame.Rect((self.screenWidth - self.buttonWidth) / 2,
                                            (self.screenHeight - self.buttonHeight) / 2 - self.buttonHeight,
@@ -113,4 +120,5 @@ class Menu:
             self.surface.blit(self.exitButtonText, self.exitButtonTextRect)
 
             self.screen.blit(self.surface, (0, 0))
+
             pygame.display.flip()

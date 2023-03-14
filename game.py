@@ -101,8 +101,9 @@ class CCC:
     def checkPlayerStatus(self):
         if any(self.keyPressed):
             if self.player.walkingSoundEffectTimer + self.player.walkingSoundEffectInterval < pygame.time.get_ticks():
-                self.player.playWalkingSound()
-                self.player.walkingSoundEffectTimer = pygame.time.get_ticks()
+                if self.player.velocityX != 0 and self.player.velocityY:
+                    self.player.playWalkingSound()
+                    self.player.walkingSoundEffectTimer = pygame.time.get_ticks()
 
         if (self.keyPressed[pygame.K_LEFT] or self.keyPressed[pygame.K_a]) and (self.keyPressed[pygame.K_RIGHT] or self.keyPressed[pygame.K_d]):
             self.player.resetVelocityX()
@@ -139,7 +140,7 @@ class CCC:
                     self.player.resetVelocityY()
 
         if self.isPlayerMoving:
-            self.player.inertia(self.delta, self.mapBorder, self.screenWidth - self.mapBorder,
+            self.player.inertia(self.delta, self.mapBorder, self.screenWidth - self.mapBorder - self.playerWidth,
                                 self.mapBorder - self.playerHeight / 4,
                                 self.screenHeight - self.playerHeight - self.mapBorder)
 
