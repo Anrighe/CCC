@@ -89,18 +89,6 @@ class CCC:
         self.inspectorWalkingOutsideSoundEffect.set_volume(0.2)
 
         self.door = Door(self.screenWidth/2, 0)
-        self.doorInteraction = 0
-        self.doorRingKnockSoundEffects = [pygame.mixer.Sound('assets\\audio\\CCC-doorbell.mp3'),
-                                          pygame.mixer.Sound('assets\\audio\\CCC-doorKnocking.mp3')]
-        for sound in self.doorRingKnockSoundEffects:
-            sound.set_volume(0.1)
-
-        self.doorOpeningSoundEffects = [pygame.mixer.Sound('assets\\audio\\CCC-openingDoor.mp3'),
-                                        pygame.mixer.Sound('assets\\audio\\CCC-slammingDoor.mp3')]
-        for sound in self.doorOpeningSoundEffects:
-            sound.set_volume(0.3)
-
-        self.openDoor = False
 
     def run(self):
         self.running = True
@@ -214,7 +202,8 @@ class CCC:
         if self.gameStatus == GAME_PHASE_1:
             self.score += 10
         elif self.gameStatus == GAME_PHASE_2:
-            self.score -= 20
+            if self.door.openDoor:
+                self.score -= 20
         self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
 
     def updateGamePhase(self):
@@ -231,37 +220,37 @@ class CCC:
     def updateBackground(self):
         if self.gameStatus == GAME_PHASE_1:
             self.inspectorApproaching = False
-            self.openDoor = False
-            self.doorInteraction = 0
+            self.door.openDoor = False
+            self.door.doorInteractionCount = 0
             if self.background == self.backgroundSprites[1]:
-                pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[1])
+                pygame.mixer.Channel(2).play(self.door.doorOpeningSoundEffects[1])
 
             self.background = self.backgroundSprites[0]
             self.gameStatus = GAME_PHASE_1
 
-        elif not self.openDoor:
+        elif not self.door.openDoor:
             if not self.inspectorApproaching:
                 self.inspectorApproaching = True
                 pygame.mixer.Channel(1).play(self.inspectorWalkingOutsideSoundEffect)
                 self.inspectorStepTimer = self.inspectorDoorInteractionTimer = pygame.time.get_ticks()
 
             if self.inspectorDoorInteractionTimer + 5000 < pygame.time.get_ticks():
-                self.doorInteraction += 1
+                self.door.doorInteractionCount += 1
 
                 self.inspectorDoorInteractionTimer = pygame.time.get_ticks()
-                pygame.mixer.Channel(2).play(random.choice(self.doorRingKnockSoundEffects))
+                pygame.mixer.Channel(2).play(random.choice(self.door.doorRingKnockSoundEffects))
 
             # If the player doesn't open the door in time, it will be slammed open
-            if self.doorInteraction >= 3 and self.inspectorDoorInteractionTimer + 3000 < pygame.time.get_ticks():
-                pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[1])
+            if self.door.doorInteractionCount >= 3 and self.inspectorDoorInteractionTimer + 3000 < pygame.time.get_ticks():
+                pygame.mixer.Channel(2).play(self.door.doorOpeningSoundEffects[1])
                 self.phase2Timer += self.phase2Duration//2
                 self.background = self.backgroundSprites[1]
-                self.openDoor = True
+                self.door.openDoor = True
             else:
                 if self.player.rect.colliderect(self.door.doorArea) and self.inspectorStepTimer + 3000 < pygame.time.get_ticks():
-                    pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[0])
+                    pygame.mixer.Channel(2).play(self.door.doorOpeningSoundEffects[0])
                     self.background = self.backgroundSprites[1]
-                    self.openDoor = True
+                    self.door.openDoor = True
 
 
 
