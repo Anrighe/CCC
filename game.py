@@ -204,6 +204,8 @@ class CCC:
         elif self.gameStatus == GAME_PHASE_2:
             if self.door.openDoor:
                 self.score -= 20
+            else:
+                self.score += 10
         self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
 
     def updateGamePhase(self):
@@ -248,6 +250,7 @@ class CCC:
                 self.door.openDoor = True
             else:
                 if self.player.rect.colliderect(self.door.doorArea) and self.inspectorStepTimer + 3000 < pygame.time.get_ticks():
+                    self.phase2Timer += self.phase2Duration // 4
                     pygame.mixer.Channel(2).play(self.door.doorOpeningSoundEffects[0])
                     self.background = self.backgroundSprites[1]
                     self.door.openDoor = True
