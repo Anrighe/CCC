@@ -5,7 +5,7 @@ from item import Item
 import random
 import math
 from cat import Cat
-from pygame.locals import *
+from door import Door
 
 GAME_PHASE_1 = 1  # Collecting items
 GAME_PHASE_2 = 2  # Avoiding items
@@ -14,6 +14,7 @@ GAME_PHASE_2 = 2  # Avoiding items
 class CCC:
     def __init__(self):
         pygame.init()
+        pygame.mixer.set_num_channels(10)
 
         self.screenWidth = 1366
         self.screenHeight = 768
@@ -30,16 +31,16 @@ class CCC:
         self.fps = 0
         self.delta = 0
 
-        self.backgroundClosedDoorSprite = pygame.image.load('assets\\sprites\\CCC-backgroundClosedDoor.png')
-        self.backgroundOpenDoorSprites = [pygame.image.load(f'assets\\sprites\\CCC-backgroundOpenDoor{i}.png')
-                                          for i in range(1,6)]
-        self.background = self.backgroundClosedDoorSprite
         self.mapBorder = 60
 
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
         self.clock = pygame.time.Clock()
         self.player = Player(self.playerStartingX, self.playerStartingY, self.playerWidth, self.playerHeight)
         self.allSprites = pygame.sprite.Group()
+
+        self.backgroundSprites = [pygame.image.load('assets\\sprites\\CCC-backgroundClosedDoor.png').convert_alpha(),
+                                  pygame.image.load('assets\\sprites\\CCC-backgroundOpenDoor1.png').convert_alpha()]
+        self.background = self.backgroundSprites[0]
 
         self.itemNumber = 5
         self.maxItemNumber = 8
@@ -75,8 +76,31 @@ class CCC:
         self.gameStatus = GAME_PHASE_1
         self.phase1Timer = 0
         self.phase2Timer = 0
-        self.msPhase1Duration = 30000  # milliseconds
-        self.msPhase2Duration = 15000  # milliseconds
+        self.phase1Duration = 30000  # milliseconds
+        self.phase2Duration = 20000  # milliseconds
+        self.inspectorActionInterval = 1000  # milliseconds
+        self.inspectorStepTimer = 0
+        self.inspectorDoorInteractionTimer = 0
+        self.inspectorApproaching = False
+
+        self.inspectorWalkingInsideSoundEffects = [pygame.mixer.Sound(f'assets\\audio\\CCC-inspectorWalkingInside{i}.mp3')
+                                                   for i in range(1, 4)]
+        self.inspectorWalkingOutsideSoundEffect = pygame.mixer.Sound('assets\\audio\\CCC-inspectorWalkingOutside.mp3')
+        self.inspectorWalkingOutsideSoundEffect.set_volume(0.2)
+
+        self.door = Door(self.screenWidth/2, 0)
+        self.doorInteraction = 0
+        self.doorRingKnockSoundEffects = [pygame.mixer.Sound('assets\\audio\\CCC-doorbell.mp3'),
+                                          pygame.mixer.Sound('assets\\audio\\CCC-doorKnocking.mp3')]
+        for sound in self.doorRingKnockSoundEffects:
+            sound.set_volume(0.1)
+
+        self.doorOpeningSoundEffects = [pygame.mixer.Sound('assets\\audio\\CCC-openingDoor.mp3'),
+                                        pygame.mixer.Sound('assets\\audio\\CCC-slammingDoor.mp3')]
+        for sound in self.doorOpeningSoundEffects:
+            sound.set_volume(0.3)
+
+        self.openDoor = False
 
     def run(self):
         self.running = True
@@ -110,6 +134,8 @@ class CCC:
             self.checkCollision()
 
             self.updateBackground()
+
+            self.drawBackground()
 
             self.allSprites.draw(self.screen)
             pygame.display.flip()
@@ -192,21 +218,94 @@ class CCC:
         self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
 
     def updateGamePhase(self):
-        if self.gameStatus == GAME_PHASE_1 and self.phase1Timer + self.msPhase1Duration < pygame.time.get_ticks():
+        if self.gameStatus == GAME_PHASE_1 and self.phase1Timer + self.phase1Duration < pygame.time.get_ticks():
+            print("PHASE 2")
             self.gameStatus = GAME_PHASE_2
             self.phase2Timer = pygame.time.get_ticks()
-        elif self.gameStatus == GAME_PHASE_2 and self.phase2Timer + self.msPhase2Duration < pygame.time.get_ticks():
+
+        elif self.gameStatus == GAME_PHASE_2 and self.phase2Timer + self.phase2Duration < pygame.time.get_ticks():
+            print("PHASE 1")
             self.gameStatus = GAME_PHASE_1
             self.phase1Timer = pygame.time.get_ticks()
 
     def updateBackground(self):
         if self.gameStatus == GAME_PHASE_1:
-            self.background = self.backgroundClosedDoorSprite
-        elif self.gameStatus == GAME_PHASE_2:
-            self.background = self.backgroundOpenDoorSprites[0]
+            self.inspectorApproaching = False
+            self.openDoor = False
+            self.doorInteraction = 0
+            if self.background == self.backgroundSprites[1]:
+                pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[1])
 
-        self.screen.blit(self.background, (0, 0))
-        self.screen.blit(self.scoreSurface, (10, 10))
+            self.background = self.backgroundSprites[0]
+            self.gameStatus = GAME_PHASE_1
+
+        elif not self.openDoor:
+            if not self.inspectorApproaching:
+                self.inspectorApproaching = True
+                pygame.mixer.Channel(1).play(self.inspectorWalkingOutsideSoundEffect)
+                self.inspectorStepTimer = self.inspectorDoorInteractionTimer = pygame.time.get_ticks()
+
+            if self.inspectorDoorInteractionTimer + 5000 < pygame.time.get_ticks():
+                self.doorInteraction += 1
+
+                self.inspectorDoorInteractionTimer = pygame.time.get_ticks()
+                pygame.mixer.Channel(2).play(random.choice(self.doorRingKnockSoundEffects))
+
+            # If the player doesn't open the door in time, it will be slammed open
+            if self.doorInteraction >= 3 and self.inspectorDoorInteractionTimer + 3000 < pygame.time.get_ticks():
+                pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[1])
+                self.phase2Timer += self.phase2Duration//2
+                self.background = self.backgroundSprites[1]
+                self.openDoor = True
+            else:
+                if self.player.rect.colliderect(self.door.doorArea) and self.inspectorStepTimer + 3000 < pygame.time.get_ticks():
+                    pygame.mixer.Channel(2).play(self.doorOpeningSoundEffects[0])
+                    self.background = self.backgroundSprites[1]
+                    self.openDoor = True
+
+
+
+
+            #if player opens the door or enough time passes
+            #self.background = self.backgroundSprites[1]
+            #self.openDoor = True
+            #self.phase2Timer = pygame.time.get_ticks()
+
+
+
+            #if self.phase2Timer + self.phase2Duration < pygame.time.get_ticks():
+                #self.openDoor = False
+                #self.gameStatus = GAME_PHASE_1
+
+
+            #else:
+                #try:
+                    # Walking forward
+                    #if self.inspectorWalkForward and self.inspectorStepTimer + self.inspectorWalkingInterval < pygame.time.get_ticks():
+                        #self.inspectorWalkingIndex += 1
+                        #self.inspectorStepTimer = pygame.time.get_ticks()
+                        #self.background = self.backgroundOpenDoorSprites[self.inspectorWalkingIndex]
+                        #pygame.mixer.Channel(1).play(random.choice(self.inspectorStepSoundEffects))
+
+                    #elif not self.inspectorWalkForward and self.inspectorStepTimer + self.inspectorWalkingInterval < pygame.time.get_ticks():
+                        #print(self.inspectorWalkingIndex)
+                        #self.inspectorWalkingIndex -= 1
+                        #if self.inspectorWalkingIndex < 0:
+                            #raise IndexError
+
+                        #self.inspectorStepTimer = pygame.time.get_ticks()
+                        #self.background = self.backgroundOpenDoorSprites[self.inspectorWalkingIndex]
+                        #pygame.mixer.Channel(1).play(random.choice(self.inspectorStepSoundEffects))
+
+                #except IndexError:
+                    #if self.inspectorWalkForward:
+                        #self.inspectorWalkForward = False
+                    #else:
+                        #self.inspectorWalkForward = True
+                        #self.gameStatus = GAME_PHASE_1
+
+
+
 
 
         #OLD WTF MODE
@@ -220,3 +319,7 @@ class CCC:
             #if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
                 #self.pickedUpItems = 0
                 #self.wtf = False
+
+    def drawBackground(self):
+        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.scoreSurface, (10, 10))

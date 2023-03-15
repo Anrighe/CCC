@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.soundLoader()
         self.spritesIndex = 0
 
-        self.image = pygame.image.load('assets\\player.png')
+        self.image = pygame.image.load('assets\\player.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.playerWidth, self.playerHeight))
         self.rect = self.image.get_rect()
 
