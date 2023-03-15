@@ -36,7 +36,7 @@ class Player(pygame.sprite.Sprite):
         self.spriteTimer = 0
         self.walkingInterval = 150
 
-        self.lastMovementLeft = None
+        self.healthPoints = 100
 
     # In each movement calculation the truncation of floating-point (velocity * delta) will be avoided
     # by converting it to an integer before adding it to the integer variable self.rect.x

@@ -5,6 +5,10 @@ from item import Item
 import random
 import math
 from cat import Cat
+from pygame.locals import *
+
+GAME_PHASE_1 = 1  # Collecting items
+GAME_PHASE_2 = 2  # Avoiding items
 
 
 class CCC:
@@ -26,7 +30,10 @@ class CCC:
         self.fps = 0
         self.delta = 0
 
-        self.background = pygame.image.load('assets\\sprites\\CCC-backgroundClosedDoor.png')
+        self.backgroundClosedDoorSprite = pygame.image.load('assets\\sprites\\CCC-backgroundClosedDoor.png')
+        self.backgroundOpenDoorSprites = [pygame.image.load(f'assets\\sprites\\CCC-backgroundOpenDoor{i}.png')
+                                          for i in range(1,6)]
+        self.background = self.backgroundClosedDoorSprite
         self.mapBorder = 60
 
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
@@ -62,6 +69,15 @@ class CCC:
 
         self.cat = Cat(self.screenWidth - self.mapBorder, self.screenHeight//2 + 40)
 
+        self.score = 0
+        self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
+
+        self.gameStatus = GAME_PHASE_1
+        self.phase1Timer = 0
+        self.phase2Timer = 0
+        self.msPhase1Duration = 30000  # milliseconds
+        self.msPhase2Duration = 15000  # milliseconds
+
     def run(self):
         self.running = True
         while self.running:
@@ -87,11 +103,13 @@ class CCC:
             # Storing the key pressed in a new variable using key.get_pressed() method
             self.keyPressed = pygame.key.get_pressed()
 
+            self.updateGamePhase()
+
             self.checkPlayerStatus()
 
             self.checkCollision()
 
-            self.wtfMode()
+            self.updateBackground()
 
             self.allSprites.draw(self.screen)
             pygame.display.flip()
@@ -158,6 +176,7 @@ class CCC:
                             random.randint(self.mapBorder, self.screenHeight - (self.mapBorder * 2)), 40, 40)
                 item.respawnTimer = pygame.time.get_ticks()
                 self.items.append(item)
+                self.pickupItem()
             if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
                 self.allSprites.add(item)
 
@@ -165,13 +184,39 @@ class CCC:
             self.cat.meow()
             self.cat.meowTimer = pygame.time.get_ticks()
 
-    def wtfMode(self):
-        if self.pickedUpItems < 10:
-            self.screen.blit(self.background, (0, 0))
-        else:
-            if not self.wtf:
-                self.wtfEffectTimer = pygame.time.get_ticks()
-            self.wtf = True
-            if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
-                self.pickedUpItems = 0
-                self.wtf = False
+    def pickupItem(self):
+        if self.gameStatus == GAME_PHASE_1:
+            self.score += 10
+        elif self.gameStatus == GAME_PHASE_2:
+            self.score -= 20
+        self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
+
+    def updateGamePhase(self):
+        if self.gameStatus == GAME_PHASE_1 and self.phase1Timer + self.msPhase1Duration < pygame.time.get_ticks():
+            self.gameStatus = GAME_PHASE_2
+            self.phase2Timer = pygame.time.get_ticks()
+        elif self.gameStatus == GAME_PHASE_2 and self.phase2Timer + self.msPhase2Duration < pygame.time.get_ticks():
+            self.gameStatus = GAME_PHASE_1
+            self.phase1Timer = pygame.time.get_ticks()
+
+    def updateBackground(self):
+        if self.gameStatus == GAME_PHASE_1:
+            self.background = self.backgroundClosedDoorSprite
+        elif self.gameStatus == GAME_PHASE_2:
+            self.background = self.backgroundOpenDoorSprites[0]
+
+        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.scoreSurface, (10, 10))
+
+
+        #OLD WTF MODE
+        #if self.pickedUpItems < 10:
+            #self.screen.blit(self.background, (0, 0))
+            #self.screen.blit(self.scoreSurface, (10, 10))
+        #else:
+            #if not self.wtf:
+                #self.wtfEffectTimer = pygame.time.get_ticks()
+            #self.wtf = True
+            #if self.wtf and self.wtfEffectTimer + self.wtfDuration < pygame.time.get_ticks():
+                #self.pickedUpItems = 0
+                #self.wtf = False
