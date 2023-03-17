@@ -268,7 +268,6 @@ class CCC:
                     self.allSprites.add(self.inspector)
                     self.door.openDoor = True
         elif self.inspector.seenPickup:  # the door is open and the inspector has seen the player picking up an item
-            print(self.inspector.velocityX, self.inspector.velocityY)
             if not self.inspector.isMoving():
                 self.inspector.scanPlayerPosition(self.player.rect.x, self.player.rect.y)
             self.inspector.chasePlayer(self.delta, self.screenWidth, self.screenHeight, self.mapBorder)
