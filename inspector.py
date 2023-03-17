@@ -16,7 +16,7 @@ class Inspector(pygame.sprite.Sprite):
         self.rect.y = y
         self.spawnX = x
         self.spawnY = y
-        self.standardSpeed = 350
+        self.standardSpeed = 1000
         self.inertiaCoefficient = 7
         self.velocityX = 0
         self.velocityY = 0
@@ -71,12 +71,12 @@ class Inspector(pygame.sprite.Sprite):
                 self.movementDirectionY = False
         else:
             self.rect.y -= int(self.velocityY * delta)
-            if self.rect.y <= 0 + mapBorder:
+            if self.rect.y <= 0 + mapBorder - (self.transformTargetDimension / 2):
                 self.movementDirectionY = True
 
         if self.velocityX == 0 and self.velocityY == 0:
-            self.velocityX = int(math.fabs((self.rect.x - self.lastPlayerPositionX)) * 2 + self.standardSpeed + random.randint(0, self.standardSpeed))
-            self.velocityY = int(math.fabs((self.rect.y - self.lastPlayerPositionY)) * 2 + self.standardSpeed + random.randint(0, self.standardSpeed))
+            self.velocityX = int(math.fabs((self.rect.x - self.lastPlayerPositionX)) * 2 + random.randint(0, self.standardSpeed))
+            self.velocityY = int(math.fabs((self.rect.y - self.lastPlayerPositionY)) * 2 + random.randint(0, self.standardSpeed))
             
     def inertia(self):
         if self.rect.x and self.velocityX >= 1:

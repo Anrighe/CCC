@@ -19,6 +19,7 @@ class CCC:
 
         self.screenWidth = 1366
         self.screenHeight = 768
+        self.mapBorder = 60
 
         self.playerStartingX = self.screenWidth/2
         self.playerStartingY = self.screenHeight/2
@@ -32,7 +33,7 @@ class CCC:
         self.fps = 0
         self.delta = 0
 
-        self.mapBorder = 60
+        self.level = 0
 
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
         self.clock = pygame.time.Clock()
@@ -86,7 +87,7 @@ class CCC:
 
         self.inspectorTransformDimension = 100
         self.inspectorSpawnPositionX = (self.screenWidth / 2) - (self.inspectorTransformDimension / 2)
-        self.inspectorSpawnPositionY = - 20
+        self.inspectorSpawnPositionY = 10
         self.inspector = Inspector(self.inspectorSpawnPositionX, self.inspectorSpawnPositionY, self.inspectorTransformDimension)
         self.inspectorWalkingInsideSoundEffects = [pygame.mixer.Sound(f'assets\\audio\\CCC-inspectorWalkingInside{i}.mp3')
                                                    for i in range(1, 4)]
@@ -202,7 +203,8 @@ class CCC:
             if item.respawnTimer + self.itemRespawnInterval < pygame.time.get_ticks():
                 self.allSprites.add(item)
 
-        if self.player.rect.colliderect(self.cat.catArea) and self.cat.meowTimer + self.cat.meowDelay < pygame.time.get_ticks():
+        if self.player.rect.colliderect(self.cat.catArea) or self.inspector.rect.colliderect(self.cat.catArea) \
+                and self.cat.meowTimer + self.cat.meowDelay < pygame.time.get_ticks():
             self.cat.meow()
             self.cat.meowTimer = pygame.time.get_ticks()
 
@@ -269,7 +271,8 @@ class CCC:
                     self.door.openDoor = True
         elif self.inspector.seenPickup:  # the door is open and the inspector has seen the player picking up an item
             if not self.inspector.isMoving():
-                self.inspector.scanPlayerPosition(self.player.rect.x, self.player.rect.y)
+                self.inspector.scanPlayerPosition(self.player.rect.x + (self.player.playerWidth / 2),
+                                                  self.player.rect.y + (self.player.playerHeight / 2))
             self.inspector.chasePlayer(self.delta, self.screenWidth, self.screenHeight, self.mapBorder)
             self.inspector.inertia()
 
@@ -289,3 +292,4 @@ class CCC:
     def drawBackground(self):
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.scoreSurface, (10, 10))
+
