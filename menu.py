@@ -8,7 +8,7 @@ class Menu:
         pygame.init()
         pygame.display.set_caption('CCC')
 
-        self.screenWidth = 800
+        self.screenWidth = 600
         self.screenHeight = 600
 
         self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))

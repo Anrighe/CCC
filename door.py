@@ -3,7 +3,9 @@ import pygame
 
 class Door:
     def __init__(self, x, y):
-        self.doorArea = pygame.Rect(x, y, 200, 50)
+        self.doorWidth = 100
+        self.doorHeight = 40
+        self.doorArea = pygame.Rect(x - (self.doorWidth / 2), y, self.doorWidth, self.doorHeight)
 
         self.doorInteraction = 0
         self.doorRingKnockSoundEffects = [pygame.mixer.Sound('assets\\audio\\CCC-doorbell.mp3'),
