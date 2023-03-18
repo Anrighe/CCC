@@ -45,6 +45,12 @@ class CCC:
                                   pygame.image.load('assets\\sprites\\CCC-backgroundOpenDoor.png').convert_alpha()]
         self.background = self.backgroundSprites[0]
 
+        self.soundtrack = pygame.mixer.Sound('assets\\audio\\CCC-Sountrack1.mp3')
+        self.soundtrack.set_volume(0.03)
+        self.soundtrackEndEvent = pygame.USEREVENT + 1
+        pygame.mixer.Channel(9).set_endevent(self.soundtrackEndEvent)
+        pygame.mixer.Channel(9).play(self.soundtrack)
+
         self.itemNumber = 5
         self.maxItemNumber = 8
         self.items = [Item(random.randint(self.mapBorder, self.screenWidth-self.mapBorder),
@@ -120,6 +126,9 @@ class CCC:
                 item.rect.y = item.originalY + self.wobbleDelta
 
             for event in pygame.event.get():
+                if event.type == self.soundtrackEndEvent:
+                    pygame.mixer.Channel(9).play(self.soundtrack)
+
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
