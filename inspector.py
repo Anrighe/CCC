@@ -16,12 +16,14 @@ class Inspector(pygame.sprite.Sprite):
         self.rect.y = y
         self.spawnX = x
         self.spawnY = y
+        self.readyPositionY = 30
         self.standardSpeed = 1000
         self.inertiaCoefficient = 7
         self.velocityX = 0
         self.velocityY = 0
         
         self.seenPickup = False
+        self.inside = False
         self.sprintTimer = 0
         self.sprintInterval = 1500  # milliseconds
 
@@ -29,6 +31,12 @@ class Inspector(pygame.sprite.Sprite):
         self.lastPlayerPositionY = 0
         self.movementDirectionX = None
         self.movementDirectionY = None
+
+    def enter(self):
+        if self.rect.y < self.readyPositionY:
+            self.rect.y += 1
+        else:
+            self.inside = True
 
     def resetPosition(self):
         self.rect.x = self.spawnX

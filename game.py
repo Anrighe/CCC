@@ -30,6 +30,7 @@ class CCC:
         self.playerHeight = self.playerSprite.height * self.playerSpriteBoost
         self.isPlayerMoving = False
 
+        self.running = True
         self.fps = 0
         self.delta = 0
 
@@ -61,7 +62,6 @@ class CCC:
             self.allSprites.add(item)
         self.allSprites.add(self.player)
 
-        self.running = False
         self.keyPressed = None
         self.keys = None
 
@@ -87,7 +87,7 @@ class CCC:
 
         self.inspectorTransformDimension = 100
         self.inspectorSpawnPositionX = (self.screenWidth / 2) - (self.inspectorTransformDimension / 2)
-        self.inspectorSpawnPositionY = 10
+        self.inspectorSpawnPositionY = -25
         self.inspector = Inspector(self.inspectorSpawnPositionX, self.inspectorSpawnPositionY, self.inspectorTransformDimension)
         self.inspectorWalkingInsideSoundEffects = [pygame.mixer.Sound(f'assets\\audio\\CCC-inspectorWalkingInside{i}.mp3')
                                                    for i in range(1, 4)]
@@ -96,8 +96,13 @@ class CCC:
 
         self.door = Door(self.screenWidth / 2, 0)
 
+        self.gameOver = False
+        self.gameOverFont = pygame.font.Font(None, 36)
+        self.gameOverText = self.gameOverFont.render("Game Over", True, (255, 0, 0))
+        self.gameOverRect = self.gameOverText.get_rect(center=(320, 240))
+        self.gameOverTextRect = None
+
     def run(self):
-        self.running = True
         while self.running:
 
             self.fps = self.clock.get_fps()
@@ -121,19 +126,23 @@ class CCC:
             # Storing the key pressed in a new variable using key.get_pressed() method
             self.keyPressed = pygame.key.get_pressed()
 
-            self.updateGamePhase()
+            if self.gameOver:
+                self.drawGameOver()
+            else:
 
-            self.checkPlayerStatus()
+                self.updateGamePhase()
 
-            self.checkCollision()
+                self.checkPlayerStatus()
 
-            self.updateBackground()
+                self.checkCollision()
 
-            self.drawBackground()
+                self.updateBackground()
 
-            self.allSprites.draw(self.screen)
+                self.drawBackground()
 
-            pygame.display.flip()
+                self.allSprites.draw(self.screen)
+
+                pygame.display.flip()
 
         pygame.quit()
 
@@ -208,14 +217,11 @@ class CCC:
             self.cat.meow()
             self.cat.meowTimer = pygame.time.get_ticks()
 
+        if self.inspector.seenPickup and self.player.rect.colliderect(self.inspector.rect) and self.inspector.inside:
+            self.gameOver = True
+
     def pickupItem(self):
-        if self.gameStatus == GAME_PHASE_1:
-            self.score += 10
-        elif self.gameStatus == GAME_PHASE_2:
-            if self.door.openDoor:
-                self.score -= 20
-            else:
-                self.score += 10
+        self.score += 100
         self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
 
     def updateGamePhase(self):
@@ -231,6 +237,7 @@ class CCC:
 
     def updateBackground(self):
         if self.gameStatus == GAME_PHASE_1:
+            self.inspector.inside = False
             self.inspector.seenPickup = False
             self.inspectorApproaching = False
             self.door.openDoor = False
@@ -269,6 +276,8 @@ class CCC:
                     self.background = self.backgroundSprites[1]
                     self.allSprites.add(self.inspector)
                     self.door.openDoor = True
+        elif not self.inspector.inside:
+            self.inspector.enter()
         elif self.inspector.seenPickup:  # the door is open and the inspector has seen the player picking up an item
             if not self.inspector.isMoving():
                 self.inspector.scanPlayerPosition(self.player.rect.x + (self.player.playerWidth / 2),
@@ -292,4 +301,14 @@ class CCC:
     def drawBackground(self):
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.scoreSurface, (10, 10))
+
+    def drawGameOver(self):
+        self.screen.fill((0, 0, 0))
+        self.gameOverTextRect = self.gameOverText.get_rect(center=(self.screenWidth / 2, self.screenHeight / 2))
+        self.screen.blit(self.gameOverText, self.gameOverTextRect)
+        pygame.display.update()
+
+        if any(self.keyPressed):
+            self.__init__()
+
 
