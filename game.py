@@ -84,7 +84,7 @@ class CCC:
         self.gameStatus = GAME_PHASE_1
         self.phase1Timer = 0
         self.phase2Timer = 0
-        self.phase1Duration = 1000  # milliseconds
+        self.phase1Duration = 5000  # milliseconds
         self.phase2Duration = 20000  # milliseconds
         self.inspectorActionInterval = 1000  # milliseconds
         self.inspectorStepTimer = 0
@@ -120,10 +120,11 @@ class CCC:
             self.delta = self.clock.tick(144) / 1000.0  # delta = time required to output a frame
 
             # Determine and apply wobble to items
-            self.wobbleOffset += 0.1
-            self.wobbleDelta = math.sin(self.wobbleOffset * self.wobbleFrequency) * self.wobbleAmplitude
-            for item in self.items:
-                item.rect.y = item.originalY + self.wobbleDelta
+            if self.gameStatus == GAME_PHASE_1:
+                self.wobbleOffset += 0.1
+                self.wobbleDelta = math.sin(self.wobbleOffset * self.wobbleFrequency) * self.wobbleAmplitude
+                for item in self.items:
+                    item.rect.y = item.originalY + self.wobbleDelta
 
             for event in pygame.event.get():
                 if event.type == self.soundtrackEndEvent:
@@ -140,6 +141,8 @@ class CCC:
             else:
 
                 self.updateGamePhase()
+
+                self.updateItemsPosition(self.delta, self.screenWidth, self.screenHeight, self.mapBorder)
 
                 self.checkPlayerStatus()
 
@@ -232,6 +235,11 @@ class CCC:
     def pickupItem(self):
         self.score += 100
         self.scoreSurface = pygame.font.Font(None, 36).render("Score: {}".format(self.score), True, (255, 255, 255))
+
+    def updateItemsPosition(self, delta, screenWidth, screenHeight, mapBorder):
+        if self.gameStatus == GAME_PHASE_2:
+            for item in self.items:
+                item.move(delta, screenWidth, screenHeight, mapBorder)
 
     def updateGamePhase(self):
         if self.gameStatus == GAME_PHASE_1 and self.phase1Timer + self.phase1Duration < pygame.time.get_ticks():
